@@ -1,0 +1,5 @@
+== Tiny Database Patcher
+
+*TDP* is <i>Tiny Database Patcher</i>, and all it does it takes
+a set of database patches in a form of plain-text SQL files and
+applies them to the database.

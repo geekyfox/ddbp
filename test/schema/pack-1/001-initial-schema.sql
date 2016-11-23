@@ -1,0 +1,5 @@
+CREATE TABLE thing (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    is_weird BOOLEAN NOT NULL
+);

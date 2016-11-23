@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/tdp'
+
+HELP_BANNER = %(
+Usage: tdp <command> <database url> [<patches #1> [<patches #2> ...]]
+
+where
+  <command> is one of:
+    * bootstrap
+    * upgrade
+    * retrofit
+    * validate_upgradable
+    * validate_compatible
+
+  <database url> is database url, e.g.
+    sqlite://test.db
+    postgres://user:password@host:port/database_name
+
+  <patches #N> is a name of .sql file or a directory with .sql files
+
+).lstrip.freeze
+
+SUPPORTED_COMMANDS = %w(
+  bootstrap upgrade retrofit validate_upgradable validate_compatible
+).freeze
+
+def help
+  puts HELP_BANNER
+  exit(1)
+end
+
+help if ARGV.length < 2
+help unless SUPPORTED_COMMANDS.include? ARGV[0]
+
+begin
+  TDP.execute(ARGV[1], ARGV[2..-1], &ARGV[0].to_sym)
+rescue TDP::NotConfiguredError => e
+  puts e.message
+  exit(1)
+end
