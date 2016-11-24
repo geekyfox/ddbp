@@ -1,0 +1,14 @@
+language: ruby
+
+rvm:
+    - 2.2.4
+    - ruby-head
+
+before_script:
+    - gem install power_assert
+
+script:
+    - gem build tdp.gemspec
+    - gem install --dev tdp-*.gem
+    - rake test
+    - rake doc
