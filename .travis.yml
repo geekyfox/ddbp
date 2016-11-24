@@ -4,14 +4,7 @@ rvm:
     - 2.2.4
     - ruby-head
 
-before_script:
-    - gem install pg
-    - gem install simplecov
-    - gem install sequel
-    - gem install test-unit
-    - gem install sqlite3
-    
 script:
-    - rake test
     - gem build tdp.gemspec
     - gem install --dev tdp-*.gem
+    - rake test
