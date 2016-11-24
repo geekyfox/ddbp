@@ -1,12 +1,15 @@
 language: ruby
+
 rvm:
     - 2.2.4
     - ruby-head
-    
+
 before_script:
     - gem install pg
+    - gem install simplecov
+    - gem install sequel
     
 script:
-    - rake build
-    - rake install
     - rake test
+    - gem build tdp.gemspec
+    - gem install --dev tdp-*.gem
