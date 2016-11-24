@@ -1,0 +1,12 @@
+language: ruby
+rvm:
+    - 2.2.4
+    - ruby-head
+    
+before_script:
+    - gem install pg
+    
+script:
+    - rake build
+    - rake install
+    - rake test
