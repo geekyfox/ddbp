@@ -5,6 +5,7 @@ task default: %w(test)
 
 Rake::TestTask.new(:test) do |t|
   t.test_files = ['test/test_suite.rb']
+  t.warning = false
 end
 
 task :clean do

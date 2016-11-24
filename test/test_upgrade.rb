@@ -13,7 +13,7 @@ class TestUpgrade < BaseTest
     upgrade_generic
     TDP.execute(@db) do |engine|
       engine << 'test/schema/pack-1/001-initial-schema.sql'
-      engine << 'test/schema/pack-4/views.sql'
+      engine << 'test/schema/pack-5/views.sql'
       assert_equal(1, engine.plan.length)
       engine.upgrade
     end
