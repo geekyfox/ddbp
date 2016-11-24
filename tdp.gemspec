@@ -11,8 +11,8 @@ Gem::Specification.new do |s|
   s.homepage    = 'http://github.com/geekyfox/tdp'
   s.license     = 'MIT'
 
-  s.add_runtime_dependency 'sequel'
-  s.add_development_dependency 'simplecov'
-  s.add_development_dependency 'sqlite3'
-  s.add_development_dependency 'test-unit'
+  s.add_runtime_dependency 'sequel', '~> 4.40'
+  s.add_development_dependency 'simplecov', '~> 0.12'
+  s.add_development_dependency 'sqlite3', '~> 1.3'
+  s.add_development_dependency 'test-unit', '~> 3.2'
 end
