@@ -8,6 +8,7 @@ before_script:
     - gem install pg
     - gem install simplecov
     - gem install sequel
+    - gem install test-unit
     
 script:
     - rake test
