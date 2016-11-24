@@ -9,6 +9,7 @@ before_script:
     - gem install simplecov
     - gem install sequel
     - gem install test-unit
+    - gem install sqlite3
     
 script:
     - rake test
