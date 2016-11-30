@@ -1,5 +1,123 @@
 == Tiny Database Patcher
 
-*TDP* is <i>Tiny Database Patcher</i>, and all it does it takes
++tdp+ is <i>Tiny Database Patcher</i>, and all it does it takes
 a set of database patches in a form of plain-text SQL files and
 applies them to the database.
+
+== Introduction
+
+To use +tdp+ to apply schema definition to the database you need two things: you need the database and you need the schema definition.
+
+=== Database
+
++tdp+ is built on top of {Sequel}[http://sequel.jeremyevans.net/] and
+thus can use any database that Sequel supports (including Oracle,
+PostgreSQL, MySQL, SQL Server and others).
+
++tdp+ uses table named +tdp_patch+ for its internal book-keeping,
+take it into account when assigning permissions as well as if for some
+reason this name clashes with what you have in your own schema.
+
+=== Schema definition
+
+Schema definition is a set of plain-text files with SQL statements to
+manipulate the database.
+
++tdp+ differentiates between two kinds of patches: "volatile"
+and "permanent." *Permanent* patches are ones that are
+intended to be applied only once, such as +CREATE+ / +ALTER+ /
+<tt>DROP TABLE</tt> or updating production data, and reapplying them is
+deemed unsafe (i.e. may  trigger errors or cause data corruption).
+*Volatile* patches are ones that are intended to be applied multiple
+times, such as <tt>CREATE OR REPLACE VIEW / FUNCTION</tt> or
+inserting fixture data.
+
+Putting it simple, if you make a new volatile patch, then apply it
+to the database, and then amend it, and +tdp+ detects discrepancy
+between what is in database and what is supposed to be in database,
+then it "assumes" that the right thing to do is to apply a new version,
+and that's what it does during the upgrade. Whereas if you do the same
+with a permanent patch, +tdp+ "concludes" that it's impossible
+to resolve the discrepancy, and so it triggers an error.
+
+Convention for naming patch files is:
+* file with a permanent patch must have +.sql+ extension and
+  start with a number,
+  e.g. +001-initial-schema.sql+ or +201611001_add_accounts_table.sql+ 
+  
+* file with a volatile patch must have +.sql+ extension and
+  *not* start with a number (otherwise it'd be treated as a
+  permanent patch), e.g. +views.sql+ or +stored-procedures.sql+.
+
+* files that don't have +.sql+ extension will be ignored.
+
+The reason why files with permanent patches should have a number in
+their name is fairly simple: for this kind of changes the order in
+which they are applied is typically important (for instance, patch #1
+creates a table, patch #2 adds a column to that table, patch #3
+references that column and so on), and numbering provides an
+intuitive way to specify just that.
+
+=== Upgrade procedure
+
+Here is how <tt>tdp upgrade</tt> is done:
+
+1. Check that for each record in +tdp_patch+ table there is a
+   corresponding patch file. Trigger an error if anything is missing.
+
+2. Check that for each permanent patch in schema definition either 
+   SHA-1 in +tdp_patch+ matches that of the file, or there's no
+   database record at all.
+
+3. Apply all new permanent patches (in alphanumeric order)
+
+4. Apply all new and modified volatile patches (in alphanumeric order)
+
+== Installation
+
+  gem install tdp
+
+== Usage  
+
++tdp+ can be used as a library within Ruby code
+
+  require 'tdp'
+
+  db = 'postgres://user:password@host:port/database_name'
+  TDP.execute(@db) do |engine|
+    engine << 'sql/schema'
+    engine << 'sql/fixtures'
+    engine.upgrade
+  end
+
+or as a command-line tool
+
+  $ tdp upgrade "postgres://user:password@host:port/database_name" sql/schema sql/fixtures
+
+=== Commands
+
+[bootstrap] Initializes database tables for keeping
+            track of applied patches.
+
+[upgrade] Applies all changes that need to be applied.
+
+[retrofit] Erases existing data about applied patches and replaces
+           it with information derived from provided schema
+           definition. Useful when starting to use +tdp+ with a legacy
+           database or after cleanup of schema definition.
+
+[validate_upgradable] Runs same set of preliminary checks as
+                      +upgrade+.
+
+[validate_compatible] Validates that all patches are applied to the
+                      database and triggers an error if there's a
+                      mismatch. Useful to do during startup of an
+                      application that uses the database to make sure
+                      that database indeed matches the application's
+                      expectations.
+
+=== Warning
+
+Using +tdp+ is about as safe and error-prone as applying patches
+manually. Make sure you did sufficient testing and have necessary
+backups before upgrading databases with sensitive data.
