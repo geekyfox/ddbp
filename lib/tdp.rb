@@ -183,6 +183,7 @@ module TDP
   # Data access object that encapsulates all operations with
   # the database.
   class DAO
+    # Sequel::Database object
     attr_reader :db
 
     ##

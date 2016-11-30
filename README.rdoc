@@ -81,10 +81,14 @@ Here is how <tt>tdp upgrade</tt> is done:
 
 +tdp+ can be used as a library within Ruby code
 
+  require 'sequel'
   require 'tdp'
 
-  db = 'postgres://user:password@host:port/database_name'
-  TDP.execute(@db) do |engine|
+  DB = Sequel.connect('postgres://localhost/database_name',
+    :user=>'user',
+    :password=>'password'
+  )
+  TDP.execute(DB) do |engine|
     engine << 'sql/schema'
     engine << 'sql/fixtures'
     engine.upgrade
@@ -93,6 +97,9 @@ Here is how <tt>tdp upgrade</tt> is done:
 or as a command-line tool
 
   $ tdp upgrade "postgres://user:password@host:port/database_name" sql/schema sql/fixtures
+
+See {Sequel documentation}[http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html]
+for details of how to connect to your database.
 
 === Commands
 
@@ -104,7 +111,7 @@ or as a command-line tool
 [retrofit] Erases existing data about applied patches and replaces
            it with information derived from provided schema
            definition. Useful when starting to use +tdp+ with a legacy
-           database or after cleanup of schema definition.
+           database or after code cleanups.
 
 [validate_upgradable] Runs same set of preliminary checks as
                       +upgrade+.
