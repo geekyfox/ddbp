@@ -9,19 +9,19 @@ module TDP
   ##
   # Raised when there is a record that patch was applied to
   # the database but the patch itself doesn't exist in the
-  # schema configuration.
+  # schema definition.
   #
   class NotConfiguredError < RuntimeError
     ##
     # * *patch_name* is the name of the patch
     #
     def initialize(patch_name)
-      super "No configuration file for patch in database: #{patch_name}"
+      super "No definition file for patch in database: #{patch_name}"
     end
   end
 
   ##
-  # Raised when patch exists in the schema configuration but
+  # Raised when patch exists in the schema definition but
   # wasn't applied to the database.
   #
   class NotAppliedError < RuntimeError
@@ -29,7 +29,7 @@ module TDP
     attr_reader :patch
 
     ##
-    # * *patch* is a problematic patch (a Patch object)
+    # patch :: a problematic patch (a Patch object)
     #
     def initialize(patch)
       super "Patch is not applied: #{patch.name}"
@@ -39,23 +39,23 @@ module TDP
 
   ##
   # Raised when signature of the patch in database doesn't match
-  # the signature of the patch in schema configuration.
+  # the signature of the patch in schema definition.
   #
   class MismatchError < RuntimeError
     # Problematic patch (a Patch object)
     attr_reader :patch
 
     ##
-    # * *patch* is a problematic patch (a Patch object)
+    # patch :: a problematic patch (a Patch object)
     #
     def initialize(patch)
-      super "Applied patch doesn't match configuration: #{patch.name}"
+      super "Applied patch doesn't match definition: #{patch.name}"
       @patch = patch
     end
   end
 
   ##
-  # Raised when schema configuration contains multiple patches
+  # Raised when schema definition contains multiple patches
   # with same name and different content.
   #
   class ContradictionError < RuntimeError
@@ -63,7 +63,7 @@ module TDP
     attr_reader :patches
 
     ##
-    # * *patches* is a list of problematic patches (Patch objects)
+    # patches :: an array of problematic patches (Patch objects)
     def initialize(patches)
       super('Patches with same name and different content: ' +
         patches.map(&:full_filename).join(' / ')
@@ -89,7 +89,7 @@ module TDP
     attr_reader :name
 
     ##
-    # * *full_filename* is a full path to _.sql_ file
+    # full_filename :: full path to +.sql+ file
     #
     def initialize(full_filename)
       @full_filename = full_filename
@@ -137,7 +137,7 @@ module TDP
     # if patch set already contains a patch with the same name and
     # different content.
     #
-    # :arg: patch : Patch
+    # patch :: Patch object to add
     #
     def <<(patch)
       known_patch = @patches[patch.name]
@@ -183,12 +183,13 @@ module TDP
   # Data access object that encapsulates all operations with
   # the database.
   class DAO
+    # Sequel::Database object
     attr_reader :db
 
     ##
     # Creates a new DAO object.
     #
-    # *db* must be one of:
+    # db :: must be either of:
     # * instance of Sequel::Database class
     # * database URL that can be passed to Sequel.connect()
     #
@@ -278,7 +279,7 @@ module TDP
     ##
     # Creates a new Engine object.
     #
-    # *db* must be one of:
+    # db :: must be one of:
     # * instance of Sequel::Database class
     # * database URL that can be passed to Sequel.connect()
     #
@@ -290,7 +291,7 @@ module TDP
     ##
     # Registers patch files in the engine.
     #
-    # *filename* may be either a name of .sql file or a name
+    # filename :: may be either a name of .sql file or a name
     # of directory (which would be recursively scanned for .sql
     # files)
     #
@@ -316,7 +317,7 @@ module TDP
     # Produces an ordered list of patches that need to be applied.
     #
     # May raise MismatchError in case if signatures of any permanent
-    # patches that are present in the configuration don't match
+    # patches that are present in the definition don't match
     # ones of the patches applied to the database.
     #
     def plan
@@ -425,7 +426,7 @@ module TDP
   # schema files locations and then calls the given block
   # passing engine as a parameter.
   #
-  # *db* must be one of:
+  # db :: must be one of:
   # * instance of Sequel::Database class
   # * database URL that can be passed to Sequel.connect()
   #
