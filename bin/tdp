@@ -12,6 +12,7 @@ where
     * retrofit
     * validate_upgradable
     * validate_compatible
+    * rename
 
   <database url> is database url, e.g.
     sqlite://test.db

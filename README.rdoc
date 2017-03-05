@@ -123,6 +123,10 @@ for details of how to connect to your database.
                       that database indeed matches the application's
                       expectations.
 
+[rename] Amends the data about applied patches after they were renamed
+         (without content changes) in the configuration.
+
+
 === Warning
 
 Using +tdp+ is about as safe and error-prone as applying patches
