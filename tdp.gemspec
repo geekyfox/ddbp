@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'tdp'
-  s.version     = '1.0.0'
-  s.date        = '2016-11-30'
+  s.version     = '1.1.0'
+  s.date        = '2016-03-05'
   s.summary     = 'Tiny Database Patcher'
   s.description = 'Tool for pure-SQL database migrations'
   s.authors     = ['Ivan Appel']

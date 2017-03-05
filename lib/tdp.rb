@@ -64,11 +64,31 @@ module TDP
 
     ##
     # patches :: an array of problematic patches (Patch objects)
+    #
     def initialize(patches)
       super('Patches with same name and different content: ' +
         patches.map(&:full_filename).join(' / ')
       )
       @patches = patches.clone.freeze
+    end
+  end
+
+  ##
+  # Raised when there are multiple patches with different names and
+  # the same content signature.
+  #
+  class DuplicateError < RuntimeError
+    # Contradicting patch names
+    attr_reader :patch_names
+
+    ##
+    # patch_names :: an array of names of problematic patches
+    #
+    def initialize(patch_names)
+      super('Patches with same content signature and different names: ' +
+        patch_names.join(' / ')
+      )
+      @patch_names = patch_names.freeze
     end
   end
 
@@ -231,6 +251,19 @@ module TDP
     end
 
     ##
+    # Fetches the information about applied patches and
+    # returns it as { signature => name } hash.
+    #
+    def applied_patches_inverse
+      result = {}
+      applied_patches.each do |name, sig|
+        raise DuplicateError, [result[sig], name] if result.key?(sig)
+        result[sig] = name
+      end
+      result
+    end
+
+    ##
     # Looks up a signature of a patch by its name.
     #
     def patch_signature(name)
@@ -269,6 +302,13 @@ module TDP
     #
     def erase
       @db[:tdp_patch].delete
+    end
+
+    ##
+    # Renames a patch.
+    #
+    def rename(old_name, new_name)
+      @db[:tdp_patch].where(name: old_name).update(name: new_name)
     end
   end
 
@@ -321,12 +361,28 @@ module TDP
     # ones of the patches applied to the database.
     #
     def plan
+      ref = @dao.applied_patches
       @patches.select do |patch|
-        signature = @dao.patch_signature(patch.name)
+        signature = ref[patch.name]
         next false if signature == patch.signature
         next true if signature.nil? || patch.volatile?
         raise MismatchError, patch
       end
+    end
+
+    ##
+    # Produces an { old_name => new_name } hash for mass-renaming.
+    #
+    def plan_rename
+      ref = @dao.applied_patches_inverse
+      m = {}
+      @patches.each do |patch|
+        old_name = ref[patch.signature]
+        raise NotAppliedError, patch if old_name.nil?
+        raise DuplicateError, [patch.name, m[old_name]] if m.key?(old_name)
+        m[old_name] = patch.name
+      end
+      m.select { |old_name, new_name| old_name != new_name }
     end
 
     ##
@@ -380,6 +436,16 @@ module TDP
       @dao.erase
       @patches.each do |patch|
         @dao.register(patch)
+      end
+    end
+
+    ##
+    # Amends the data about applied patches after they were renamed
+    # (without content changes) in the configuration.
+    #
+    def rename
+      plan_rename.each do |old_name, new_name|
+        @dao.rename(old_name, new_name)
       end
     end
   end
